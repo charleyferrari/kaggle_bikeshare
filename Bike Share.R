@@ -43,7 +43,7 @@ monthvariablesstacked <- monthvariables[,(!(colnames(monthvariables) == "Month")
 monthvariablesstacked$datetime <- as.character(monthvariablesstacked$datetime)
 
 
-monthvariablesstacked <- melt(monthvariablesstacked, id.vars="datetime", variable.name="RiderType", value.name="count")
+monthvariablesstacked <- melt(monthvariablesstacked, id.vars="datetime", variable_name="RiderType", value.name="count")
 
 monthvariablesstacked$datetime <- strptime(monthvariablesstacked$datetime, format = "%Y-%m-%d", tz="")
 
