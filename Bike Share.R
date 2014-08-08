@@ -52,7 +52,7 @@ monthvariablesstacked$datetime <- strptime(monthvariablesstacked$datetime, forma
 
 monthvariablesstacked$RiderType <- factor(monthvariablesstacked$RiderType)
 
-PDFPath <- "BikeShareGraphs3.pdf"
+PDFPath <- "BikeShareGraphs.pdf"
 pdf(file=PDFPath)
 
 ################
