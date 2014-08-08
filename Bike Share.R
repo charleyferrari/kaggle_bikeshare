@@ -45,11 +45,14 @@ monthvariablesstacked$datetime <- as.character(monthvariablesstacked$datetime)
 
 monthvariablesstacked <- melt(monthvariablesstacked, id.vars="datetime", variable_name="RiderType", value.name="count")
 
+#For some reason value.name stopped working above. Manually changing coloumn names here.
+colnames(monthvariablesstacked) <- c("datetime", "RiderType", "count")
+
 monthvariablesstacked$datetime <- strptime(monthvariablesstacked$datetime, format = "%Y-%m-%d", tz="")
 
 monthvariablesstacked$RiderType <- factor(monthvariablesstacked$RiderType)
 
-PDFPath <- "BikeShareGraphs.pdf"
+PDFPath <- "BikeShareGraphs3.pdf"
 pdf(file=PDFPath)
 
 ################
@@ -71,7 +74,7 @@ ggplot(monthvariablesstacked, aes(x=datetime, y=count, fill=RiderType)) +
 
 ############################
 #for loop test
-#m<- 4
+#m<- 8
 #y <- 2011
 #
 #columntitle <- "count"
@@ -81,7 +84,10 @@ ggplot(monthvariablesstacked, aes(x=datetime, y=count, fill=RiderType)) +
 #                              !(colnames(variables) == "casual"))]
 #newvariables[,"usedcount"] <- variables[,"count"]
 #
+#
 ############################
+
+
 
 for(columntitle in c("count", "registered", "casual")){
   newvariables <- variables[,(!(colnames(variables) == "count") &
@@ -94,32 +100,33 @@ for(columntitle in c("count", "registered", "casual")){
 # Weekends & Holidays
 ################
 
-
   for(y in 2011:2012){
     for(m in 1:12){
       slice <- newvariables[(newvariables$Year == y & newvariables$Month == m),]
       if(NROW(slice[slice$holiday == 1,]) == 0){
         print(ggplot(slice,aes(x=datetime, y=usedcount)) +
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") + 
-                #geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
+                #geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
                 #          alpha = 1, colour = "yellow") +
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
                 geom_line() + 
                 ggtitle(paste("Weekends and Holidays", columntitle, Months[m], y, sep=" ")) + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }else{
         print(ggplot(slice,aes(x=datetime, y=usedcount)) +
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") + 
-                geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = Inf, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "yellow") +
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
                 geom_line() + 
                 ggtitle(paste("Weekends and Holidays", columntitle, Months[m], y, sep=" ")) + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }
     }
   }
@@ -139,50 +146,52 @@ for(columntitle in c("count", "registered", "casual")){
       if(NROW(slice[slice$holiday == 1,]) == 0){      
         #slice$weather = factor(slice$weather, levels=c(1,2,3,4))
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=weather)) + 
-                #geom_rect(data = subset(slice, weather == 1), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 1,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "gray") + 
-                #geom_rect(data = subset(slice, weather == 2), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 2,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "green") + 
-                #geom_rect(data = subset(slice, weather == 3), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 3,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "yellow") + 
-                #geom_rect(data = subset(slice, weather == 4), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 4,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "red") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                #geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                #geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                 #          alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("Weather", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(1, 4)) + 
                 #scale_colour_manual(values = cols) + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }else{
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=weather)) + 
-                #geom_rect(data = subset(slice, weather == 1), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 1,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "gray") + 
-                #geom_rect(data = subset(slice, weather == 2), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 2,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "green") + 
-                #geom_rect(data = subset(slice, weather == 3), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 3,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "yellow") + 
-                #geom_rect(data = subset(slice, weather == 4), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                #geom_rect(data = slice[slice$weather == 4,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                 #          alpha = 1, colour = "red") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("Weather", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(1, 4)) + 
                 #scale_colour_manual(values = cols) + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }
     }
   }
@@ -198,32 +207,34 @@ for(columntitle in c("count", "registered", "casual")){
       slice <- newvariables[(newvariables$Year == y & newvariables$Month == m),]
       if(NROW(slice[slice$holiday == 1,]) == 0){
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=temp)) + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                #geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                #geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                 #          alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("Temp", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(min(newvariables$temp), max(newvariables$temp)), low="blue", high="red") + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }else{
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=temp)) + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("Temp", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(min(newvariables$temp), max(newvariables$temp)), low="blue", high="red") + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }
     }
   }
@@ -239,32 +250,34 @@ for(columntitle in c("count", "registered", "casual")){
       slice <- newvariables[(newvariables$Year == y & newvariables$Month == m),]
       if(NROW(slice[slice$holiday == 1,]) == 0){
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=atemp)) + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                #geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                #geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                 #          alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("ATemp", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(min(newvariables$atemp), max(newvariables$atemp)), low="blue", high="red") + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }else{
         print(ggplot(slice,aes(x=datetime, y=usedcount, colour=atemp)) + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, Hour == 0), aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
+                geom_rect(data = slice[slice$Hour == 0,], aes(ymin = -Inf, ymax = Inf, xmin = datetime, xmax = datetime),
                           alpha = 1, colour = "white") + 
-                geom_rect(data = subset(slice, workingday == 0), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$workingday == 0,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "gray") +
-                geom_rect(data = subset(slice, holiday == 1), aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
+                geom_rect(data = slice[slice$holiday == 1,], aes(ymin = -Inf, ymax = 25, xmin = datetime - 1000, xmax = datetime + 1000),
                           alpha = 1, colour = "yellow") +
                 geom_line() + 
                 ggtitle(paste("ATemp", columntitle, Months[m], y, sep=" ")) + 
                 scale_colour_gradient(limits=c(min(newvariables$atemp), max(newvariables$atemp)), low="blue", high="red") + 
-                coord_fixed(ratio=1000))
+                coord_fixed(ratio=452000/max(slice[,"usedcount"])) + 
+                theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()))
       }
     }
   }
